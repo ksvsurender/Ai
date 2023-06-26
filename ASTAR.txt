@@ -1,0 +1,96 @@
+import heapq
+
+
+class Graph:
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_edge(self, node1, node2, cost):
+        if node1 not in self.adjacency_list:
+            self.adjacency_list[node1] = {}
+        self.adjacency_list[node1][node2] = cost
+
+        if node2 not in self.adjacency_list:
+            self.adjacency_list[node2] = {}
+        self.adjacency_list[node2][node1] = cost
+
+    def heuristic(self, node, goal_node):
+        # Heuristic function (Euclidean distance for simplicity)
+        coordinates = {
+            'A': (0, 0),
+            'B': (2, 0),
+            'C': (0, 2),
+            'D': (2, 2),
+            'E': (3, 1),
+            'F': (4, 2),
+            'G': (4, 0)
+        }
+        x1, y1 = coordinates[node]
+        x2, y2 = coordinates[goal_node]
+        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+
+    def a_star(self, start_node, goal_node):
+        open_nodes = [(0, start_node)]
+        heapq.heapify(open_nodes)
+        came_from = {}
+        g_score = {node: float('inf') for node in self.adjacency_list}
+        g_score[start_node] = 0
+        f_score = {node: float('inf') for node in self.adjacency_list}
+        f_score[start_node] = self.heuristic(start_node, goal_node)
+
+        while open_nodes:
+            _, current_node = heapq.heappop(open_nodes)
+
+            if current_node == goal_node:
+                path = [current_node]
+                cost = g_score[goal_node]
+                while current_node in came_from:
+                    current_node = came_from[current_node]
+                    path.append(current_node)
+                path.reverse()
+                return path, cost
+
+            for neighbor, cost in self.adjacency_list[current_node].items():
+                tentative_g_score = g_score[current_node] + cost
+                if tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current_node
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + self.heuristic(neighbor, goal_node)
+                    heapq.heappush(open_nodes, (f_score[neighbor], neighbor))
+
+        # No path found
+        return None, None
+
+
+# Create an instance of the Graph class
+graph = Graph()
+
+# Add edges to the graph
+# graph.add_edge('A', 'B', 5)
+# graph.add_edge('A', 'C', 3)
+# graph.add_edge('B', 'D', 2)
+# graph.add_edge('C', 'D', 8)
+# graph.add_edge('C', 'E', 4)
+# graph.add_edge('D', 'E', 1)
+# graph.add_edge('D', 'F', 5)
+# graph.add_edge('E', 'G', 6)
+# graph.add_edge('F', 'G', 2)
+while True:
+    edge = input("Enter an edge (node1 node2 cost) or 'done' to finish: ")
+    if edge == "done":
+        break
+    node1, node2, cost = edge.split()
+    graph.add_edge(node1, node2, int(cost))
+
+# Dynamic input of start and goal nodes
+start_node = input("Enter the start node: ")
+goal_node = input("Enter the goal node: ")
+path, cost = graph.a_star(start_node, goal_node)
+
+# Display the path and cost
+if path is not None:
+    print(f"Shortest path from {start_node} to {goal_node}:")
+    print(" -> ".join(path))
+    print(f"Cost: {cost}")
+else:
+    print(f"No path found from {start_node} to {goal_node}.")

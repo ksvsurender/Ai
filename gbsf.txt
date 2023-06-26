@@ -1,0 +1,54 @@
+from queue import PriorityQueue
+
+class Graph:
+    def __init__(self):
+        self.adjacency_list = {}
+    
+    def add_edge(self, node1, node2, cost):
+        if node1 not in self.adjacency_list:
+            self.adjacency_list[node1] = {}
+        self.adjacency_list[node1][node2] = cost
+        
+        if node2 not in self.adjacency_list:
+            self.adjacency_list[node2] = {}
+        self.adjacency_list[node2][node1] = cost
+    
+    def greedy_bfs(self, start, goal):
+        visited = set()
+        priority_queue = PriorityQueue()
+        priority_queue.put((0, start, 0))
+        
+        while not priority_queue.empty():
+            _, current_node, current_cost = priority_queue.get()
+            
+            if current_node == goal:
+                print(f"Goal node found with cost: {current_cost}")
+                return
+            
+            visited.add(current_node)
+            
+            for neighbor, cost in sorted(self.adjacency_list[current_node].items(), key=lambda x: x[1]):
+                if neighbor not in visited:
+                    priority_queue.put((self.heuristic(neighbor, goal), neighbor, current_cost + cost))
+                    visited.add(neighbor)
+        
+        print("Goal node not found")
+    
+    def heuristic(self, node, goal):
+        # This is the heuristic function used to estimate the distance from a node to the goal
+        # You need to implement your own heuristic function based on the problem domain
+        pass
+
+# Example usage:
+g = Graph()
+
+# Add edges and costs to the graph
+g.add_edge('A', 'B', 3)
+g.add_edge('A', 'C', 5)
+g.add_edge('B', 'D', 2)
+g.add_edge('B', 'E', 4)
+g.add_edge('C', 'F', 1)
+g.add_edge('C', 'G', 6)
+
+# Start the Greedy BFS from node 'A' to node 'G'
+g.greedy_bfs('A', 'G')
