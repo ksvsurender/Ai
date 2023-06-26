@@ -1,0 +1,207 @@
+class Graph:
+    def find_h(self,state,goal):
+        s=0
+        for i in range(3):
+            for j in range(3):
+                s+=abs(state[i][j]-goal[i][j])
+        return s
+    def find_zero(self,state):
+        for i in range(3):
+            for j in range(3):
+                if(state[i][j]==0):
+                    return (i,j)
+    def in_Open(self,Open,t,p,d):
+        if(Open[c_tuple(t)][0]>d+1+self.find_h(start,goal)):
+            Open[c_tuple(t)][2]=p
+            Open[c_tuple(t)][0]=d+1+self.find_h(start,goal)
+            Open[c_tuple(t)][3]=d+1
+    def in_close(self,close,Open,t,p,d):
+        if(close[c_tuple(t)][0]>d+1+self.find_h(start,goal)):
+            close[c_tuple(t)][0]=p
+            close[c_tuple(t)][1]=d+1+self.find_h(start,goal)
+            d_open,d_close=[[t,d+1]],[p,t]
+            while(d_open):
+                element,d=d_open.pop()
+                i,j=self.find_zero(element)
+                succs=self.rules(element,i,j)
+                for k in succs:
+                    if k not in d_close:
+                        if c_tuple(k) in Open:
+                            if(Open[c_tuple(k)][0]>d+1+self.find_h(k,goal)):
+                                Open[c_tuple(k)][0]=d+1+self.find_h(k,goal)
+                                Open[c_tuple(k)][3]=d+1
+                                d_open.append([k,d+1])
+                        elif c_tuple(k) in close:
+                            if(close[c_tuple(k)][1]>d+1+self.find_h(k,goal)):
+                                close[c_tuple(k)][1]=d+1+self.find_h(k,goal)
+                                d_open.append([k,d+1])
+                        else:
+                            pass
+                        d_close.append(k)
+    def rules(self,p,i,j):
+        temp=[]
+        if(j<2): ##Rule 1 Move zero to right
+            t=c_list(p)
+            t[i][j],t[i][j+1]=t[i][j+1],t[i][j]
+            temp.append(t)
+            #print(p,"inside rules")
+        if(i>0): ##Rule 1 Move zero to top
+            t=c_list(p)
+            t[i][j],t[i-1][j]=t[i-1][j],t[i][j]
+            temp.append(t)
+            #print(p,"inside rules")
+        if(j>0): ##Rule 1 Move zero to left
+            t=c_list(p)
+            t[i][j],t[i][j-1]=t[i][j-1],t[i][j]
+            temp.append(t)
+            #print(p,"inside rules")
+        if(i<2): ##Rule 1 Move zero to bottom
+            t=c_list(p)
+            t[i][j],t[i+1][j]=t[i+1][j],t[i][j]
+            temp.append(t)
+            #print(p,"inside rules")
+        return temp
+   
+   
+    def A_star(self,start,goal):
+        Open,close={c_tuple(start):[self.find_h(start,goal),start,-1,0]},{}
+        p=start
+        while(Open):
+            Open=list(Open.items())
+            p,arr=Open.pop(0)
+            f,p,parent,d=arr
+            Open=dict(Open)
+            close[c_tuple(p)]=[parent,f]
+            if(p==goal):
+                print(p)
+                print('Goal Node found')
+                return
+           
+            i,j=self.find_zero(start)  ###Returns indices of zero
+           
+            temp=self.rules(p,i,j) ##returns an array of successors
+            for t in temp:
+                if c_tuple(t) in Open:
+                    self.in_Open(Open,t,p,d)
+                if c_tuple(t) in close:
+                    self.in_close(close,Open,t,p,d)
+                if c_tuple(t) not in Open and c_tuple(t) not in close:
+                    Open[c_tuple(t)]=([d+1+self.find_h(t,goal),t,p,d+1])
+            Open=dict(sorted(Open.items(), key =lambda kv:(kv[1], kv[0])))
+            print(p)
+   
+   
+    def Branch_and_bound(self,start,goal):
+        Open,close=[(start,0)],[start]
+        while(Open):
+            p,d=Open.pop(0)
+            if(p==goal):
+                print(p)
+                print("Goal node found")
+                return
+           
+            i,j=self.find_zero(start)  ###Returns indices of zero
+           
+            temp=self.rules(p,i,j) ##returns an array of successors
+            for i in temp:
+                if i not in close:
+                    Open.append((i,d+1))
+                    close.append(i)
+            Open.sort(key=lambda x:x[1])
+            print(p)
+        print("Goal not found")
+   
+   
+    def Hill_climbing(self,start,goal):
+        Open,close=[(start,0)],[start]
+        while(Open):
+            p,h=Open.pop(0)
+            if(p==goal):
+                print(p)
+                print("success")
+                return
+           
+            i,j=self.find_zero(start)  ###Returns indices of zero
+           
+            temp=self.rules(p,i,j) ##returns an array of successors
+           
+            t=[]
+            for i in temp:
+                if i not in close:
+                    t.append((i,self.find_h(i,goal)))
+                    close.append(i)
+            t.sort(key=lambda x:x[1])
+            t.extend(Open)
+            Open=t
+            print(p)
+        print("Goal not found")
+   
+   
+    def Beam(self,start,goal):
+        Open,close=[],[start]
+        w_open=[(start,0)]
+        w=2
+        p=start
+        while(1):
+            while(w_open):
+                p,h=w_open.pop(0)
+                if(p==goal):
+                    print(p)
+                    print("Success")
+                    return
+               
+                i,j=self.find_zero(start)  ###Returns indices of zero
+           
+                temp=self.rules(p,i,j) ##returns an array of successors
+           
+                for i in temp:
+                    #print(i)
+                    if i not in close:
+                        Open.append((i,self.find_h(i,goal)))
+                        close.append(i)
+                print(p)
+            Open.sort(key= lambda x : x[1])
+            w_open=Open[:w]
+            #print(p,'     ',Open,'    ',w_open)
+            Open=[]
+            print(p)
+        print('Goal node not found')
+   
+   
+    def Best_first(self,start,goal):
+        Open,close=[(start,0)],[start]
+        p=start
+        while(Open):
+            p,h=Open.pop(0)
+            if(p==goal):
+                print(p)
+                print("Success")
+                return
+           
+            i,j=self.find_zero(start)  ###Returns indices of zero
+           
+            temp=self.rules(p,i,j) ##returns an array of successors
+           
+            for i in temp:
+                if i not in close:
+                    Open.append((i,self.find_h(i,goal)))
+                    close.append(i)
+            Open.sort(key = lambda x : x[1])
+            print(p)
+        print("Goal not found")
+def c_tuple(a):
+    return (tuple(a[0]),tuple(a[1]),tuple(a[2]))
+def c_list(x):
+    return [list(x[0]),list(x[1]),list(x[2])]
+start,goal=[[1,2,3],[4,5,0],[7,8,6]],[[1,2,0],[4,5,3],[7,8,6]]
+g=Graph()
+print("**** A Star****")
+g.A_star(start,goal)
+print("****Branch and bound ****")
+g.Branch_and_bound(start,goal)
+print("****hill climibing****")
+g.Hill_climbing(start,goal)
+print("****Beam****")
+g.Beam(start,goal)
+print("****Best****")
+g.Best_first(start,goal)

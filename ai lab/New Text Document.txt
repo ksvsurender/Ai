@@ -1,0 +1,66 @@
+class Waterjug:
+    def __init__(self,bjmax,sjmax,bj,sj,goal):
+        self.bjmax=bjmax
+        self.sjmax=sjmax
+        self.bj=bj
+        self.sj=sj
+        self.goal=goal
+          
+    def bfs(self):
+        open=[]
+        closed=[]
+        open.append((self.bj,self.sj))
+        closed.append((self.bj,self.sj))
+    
+        while open:
+            
+
+            recordx=open.pop(0)
+            print(recordx)
+            bj=recordx[0]
+            sj=recordx[1]
+
+            if sj==self.goal or bj==self.goal:
+                print(" successful measuring")
+                return
+
+        
+            if bj==0 and (self.bjmax,sj) not in closed:
+                open.append((self.bjmax,sj))
+                closed.append((self.bjmax,sj))
+
+
+            if sj==0 and (bj,self.sjmax) not in closed:
+                open.append((bj,self.sjmax))
+                closed.append((bj,self.sjmax))
+
+
+            if bj>0 and (0,sj) not in closed:
+                open.append((0,sj))
+                closed.append((0,sj))
+
+
+            if sj>0 and (bj,0) not in closed:
+                open.append((bj,0))
+                closed.append((bj,0))
+
+            if bj>0 and sj<self.sjmax:
+
+                if bj>=(self.sjmax-sj):
+                    t1=bj-(self.sjmax-sj)
+                    t2=self.sjmax
+                else:
+                    t1=0
+                    t2=sj+bj
+
+                if(t1,t2) not in closed:
+                    open.append((t1,t2))
+                    closed.append((t1,t2))
+            
+
+
+                 
+if __name__ =='__main__':       
+         
+    waterjug=Waterjug(5,3,0,0,4)
+    waterjug.bfs()

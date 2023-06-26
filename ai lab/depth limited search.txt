@@ -1,0 +1,53 @@
+# depth limited search
+
+
+def dls(source,level,vis,limit,goal):
+    if(level>limit):
+        return False
+    if(source==goal):
+        return True
+    vis[source]=1
+    flag=False
+    for i in adj[source]:
+        if(vis[i]==0):
+            flag=dls(i,level+1,vis,limit,goal)
+            if(flag==True):
+                return True
+    return False     
+    
+
+n=int(input("Enter No.of vertices:"))
+m=int(input("No.of edges:"))
+adj=[[] for i in range(n+1)]
+vis=[0 for i in range(n+1)]
+vis[0]=1
+# print(adj)
+print("Enter edges:(u,v)")
+for i in range(m):
+    u,v=map(int,input().split())
+    adj[u].append(v)
+goal=int(input("enter goal state:"))
+limit=1
+
+ans=dls(1,0,vis,limit,goal)
+if(ans):
+    print("goal state is found")
+else :
+    print("goal state is not found")
+
+
+
+output
+
+Enter No.of vertices:8
+No.of edges:7
+Enter edges:(u,v)
+1 2
+1 3
+2 4
+2 5
+3 6
+3 7
+6 8
+enter goal state:4
+goal state is not found
